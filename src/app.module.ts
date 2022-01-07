@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { KnexModule } from 'nestjs-knex';
 import { PictureModule } from './picture/picture.module';
 import { UserModule } from './user/user.module';
+import { AuthModule } from './auth/auth.module';
 import Config from './config';
 
 @Module({
@@ -11,6 +12,7 @@ import Config from './config';
     }),
     PictureModule,
     UserModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
