@@ -6,9 +6,13 @@ import * as bcrypt from 'bcrypt';
 export class AuthService {
     constructor(private userService: UserService){}
 
-    async validateUser(email: string, hashedPassword: string){
+    async validateUser(email: string, password: string){
         const user = await this.userService.findOne(email);
-        const comparePasswords = bcrypt.compare(hashedPassword, user.password);
-        if()
+        const comparePasswords = bcrypt.compareSync(password, user[3]);
+
+        if(comparePasswords){
+            const result = user;
+            return result;
+        }
     }
 }

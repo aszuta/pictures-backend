@@ -19,6 +19,7 @@ export class UserService {
                 email: createUserDto.email,
                 password: hashedPassword,
             });
+            console.log(JSON.stringify(user));
             return { user };
         } catch (err) {
             if(!err.statusCode){
@@ -28,9 +29,9 @@ export class UserService {
         }
     }
 
-    async findOne(email: string){
-        const user = await this.knex.table('user').where('email', email);
-        if(!email){
+    async findOne(email: string) {
+        const user = await this.knex.select().table('user').where('email', email);
+        if(!user){
             throw new NotFoundException('User not found');
         }
         return { user };
