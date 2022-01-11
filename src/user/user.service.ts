@@ -30,11 +30,7 @@ export class UserService {
     }
 
     async findOne(email: string) {
-        const user = await this.knex.select().table('user').where('email', email);
-        if(!user){
-            throw new NotFoundException('User not found');
-        }
-        return { user };
+        return await this.knex.select().table('user').where('email', email).first();
     }
 
     async remove(id: number){
