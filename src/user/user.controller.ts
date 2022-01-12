@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Request, Param, Post, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from 'dto/create-user.dto';
 import { LoginUserDto } from 'dto/login-user.dto';
 import { LocalAuthGuard } from 'src/auth/local-auth.guard';
 import { AuthService } from 'src/auth/auth.service';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('api/user/')
 export class UserController {
@@ -23,6 +24,12 @@ export class UserController {
     async login(@Body() loginUserDto: LoginUserDto){
         //console.log(loginUserDto);
         return this.authService.login(loginUserDto);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('/profile')
+    getProfile(@Request() req){
+        return req.user
     }
 
     @Get('/:email')
