@@ -10,23 +10,15 @@ export class UserService {
     ){}
 
     async create(createUserDto: CreateUserDto){
-        try {
-            const salt = await bcrypt.genSalt(16);
-            const hashedPassword = await bcrypt.hash(createUserDto.password, salt);
+        const salt = await bcrypt.genSalt(16);
+        const hashedPassword = await bcrypt.hash(createUserDto.password, salt);
 
-            const user = await this.knex.table('user').insert({
-                name: createUserDto.name,
-                email: createUserDto.email,
-                password: hashedPassword,
-            });
-            console.log(JSON.stringify(user));
-            return { user };
-        } catch (err) {
-            if(!err.statusCode){
-                err.statusCode = 500;
-            }
-            throw err;
-        }
+        const user = await this.knex.table('user').insert({
+            name: createUserDto.name,
+            email: createUserDto.email,
+            password: hashedPassword,
+        });
+        console.log(JSON.stringify(user));
     }
 
     async findOne(email: string) {
@@ -37,6 +29,21 @@ export class UserService {
         await this.knex.table('user').where('id', id).del();
         if(!id){
             throw new NotFoundException(`User ${id} does not exist`);
+        }
+    }
+
+    async setCurrentRefreshToken(refreshToken: string, id: number){
+        const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+        await this.knex.table('user').where('id', id).update({
+            hash: hashedRefreshToken
+        });
+    }
+
+    async compareRefreshTokens(refreshToken: string, email: string){
+        const user = await this.findOne(email);
+        const isRefreshTokensMatching = await bcrypt.compare(refreshToken, user.hash);
+        if(isRefreshTokensMatching){
+            return user;
         }
     }
 }
