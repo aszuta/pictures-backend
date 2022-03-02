@@ -21,8 +21,20 @@ export class UserService {
         console.log(JSON.stringify(user));
     }
 
-    async findOne(email: string) {
+    async findOne(email: string){
         return await this.knex.select().table('user').where('email', email).first();
+    }
+
+    async findOneById(id: number){
+        return await this.knex.select().table('user').where('id', id).first();
+    }
+
+    async findById(id: number) {
+        return await this.knex.select('id', 'name', 'email').table('user').where('id', id).first();
+    }
+
+    async findByRefresh(hash: string){
+        return await this.knex.select('id', 'name', 'email').table('user').where('hash', hash).first();
     }
 
     async remove(id: number){
@@ -33,10 +45,18 @@ export class UserService {
     }
 
     async setCurrentRefreshToken(refreshToken: string, id: number){
-        const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+        // const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+        const hashedRefreshToken = refreshToken;
         await this.knex.table('user').where('id', id).update({
             hash: hashedRefreshToken
         });
+    }
+
+    async removeRefreshToken(id: number){
+        console.log(id);
+        await this.knex.table('user').where('id', id).update({
+            hash: null
+        })
     }
 
     async compareRefreshTokens(refreshToken: string, email: string){

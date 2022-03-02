@@ -44,10 +44,5 @@ export class AuthService {
             accessToken,
             refreshToken
         }
-
-        /*const payload = { sub: user.id };
-        return {
-            access_token: this.jwtService.sign(payload)
-        };*/
     }
 }
