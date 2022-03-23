@@ -1,4 +1,4 @@
-import { Controller, Post, UploadedFile, UseInterceptors, Req, Get, Param, Put, Delete, Body } from '@nestjs/common';
+import { Controller, Post, UploadedFile, UseInterceptors, Req, Get, Param, Put, Delete, Body, Res } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AddPictureDto } from 'dto/add-picture.dto';
 import { multerOptions } from 'src/config/multerOptions';
@@ -19,8 +19,8 @@ export class PictureController {
 
     @Get('file/:filename')
     async getFile(@Param('filename') filename: string){
-        const file = await this.pictureService.findOne(filename);
-        return file;
+        const data = await this.pictureService.findOne(filename);
+        return data;
     }
 
     @Get('files')
