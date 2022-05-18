@@ -29,12 +29,12 @@ export class PictureService {
                 'id', 
                 'title', 
                 'createdBy',
-                this.knex.raw(`(SELECT name FROM picturesapp.user WHERE picturesapp.user.id = picturesapp.picture.createdBy) AS name`),
+                this.knex.raw(`(SELECT name FROM user WHERE user.id = picture.createdBy) AS name`),
                 'createdAt', 
                 'filename', 
                 'filepath',
-                this.knex.raw(`(SELECT COUNT(voteType) FROM picturesapp.vote WHERE voteType="voteUp" AND picturesapp.vote.postId = picturesapp.picture.id) AS votesUp`),
-                this.knex.raw(`(SELECT COUNT(voteType) FROM picturesapp.vote WHERE voteType="voteDown" AND picturesapp.vote.postId = picturesapp.picture.id) AS votesDown`))
+                this.knex.raw(`(SELECT COUNT(voteType) FROM .vote WHERE voteType="voteUp" AND vote.postId = picture.id) AS votesUp`),
+                this.knex.raw(`(SELECT COUNT(voteType) FROM vote WHERE voteType="voteDown" AND vote.postId = picture.id) AS votesDown`))
             .from('picture').where('id', id).first();
     }
 
@@ -44,12 +44,12 @@ export class PictureService {
                 'id', 
                 'title', 
                 'createdBy',
-                this.knex.raw(`(SELECT name FROM picturesapp.user WHERE picturesapp.user.id = picturesapp.picture.createdBy) AS name`),
+                this.knex.raw(`(SELECT name FROM user WHERE user.id = picture.createdBy) AS name`),
                 'createdAt', 
                 'filename', 
                 'filepath',
-                this.knex.raw(`(SELECT COUNT(voteType) FROM picturesapp.vote WHERE voteType="voteUp" AND picturesapp.vote.postId = picturesapp.picture.id) AS votesUp`),
-                this.knex.raw(`(SELECT COUNT(voteType) FROM picturesapp.vote WHERE voteType="voteDown" AND picturesapp.vote.postId = picturesapp.picture.id) AS votesDown`))
+                this.knex.raw(`(SELECT COUNT(voteType) FROM vote WHERE voteType="voteUp" AND vote.postId = picture.id) AS votesUp`),
+                this.knex.raw(`(SELECT COUNT(voteType) FROM vote WHERE voteType="voteDown" AND vote.postId = picture.id) AS votesDown`))
             .from('picture');
 
         await this.redisService.set('dashboard', JSON.stringify(pictures), 86400);
@@ -63,12 +63,12 @@ export class PictureService {
                 'id',
                 'title',
                 'createdBy',
-                this.knex.raw(`(SELECT name FROM picturesapp.user WHERE picturesapp.user.id = picturesapp.picture.createdBy) AS name`),
+                this.knex.raw(`(SELECT name FROM user WHERE user.id = picture.createdBy) AS name`),
                 'createdAt',
                 'filename',
                 'filepath',
-                this.knex.raw(`(SELECT COUNT(voteType) FROM picturesapp.vote WHERE voteType="voteUp" AND picturesapp.vote.postId = picturesapp.picture.id) AS votesUp`),
-                this.knex.raw(`(SELECT COUNT(voteType) FROM picturesapp.vote WHERE voteType="voteDown" AND picturesapp.vote.postId = picturesapp.picture.id) AS votesDown`))
+                this.knex.raw(`(SELECT COUNT(voteType) FROM vote WHERE voteType="voteUp" AND vote.postId = picture.id) AS votesUp`),
+                this.knex.raw(`(SELECT COUNT(voteType) FROM vote WHERE voteType="voteDown" AND vote.postId = picture.id) AS votesDown`))
             .from('picture').where('createdBy', id);
         
             await this.redisService.set('profile', JSON.stringify(pictures), 86400);
