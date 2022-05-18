@@ -12,13 +12,13 @@ export class AuthService {
         private jwtService: JwtService
         ){}
     
-    public async getAccessToken(id: number){
+    public async getAccessToken(id: number): Promise<any> {
         const payload = { sub: id };
         const token = this.jwtService.sign(payload);
         return token;
     }
     
-    public async getRefreshToken(id: number){
+    public async getRefreshToken(id: number): Promise<string> {
         const refreshToken = uid(16);
         await this.userService.setCurrentRefreshToken(refreshToken, id);
         return refreshToken;
@@ -32,11 +32,10 @@ export class AuthService {
             const { password, ...result } = user;
             return result;
         }
-        console.log('nie');
         return null;
     }
 
-    async login(loginUserDto: LoginUserDto) {
+    async login(loginUserDto: LoginUserDto): Promise<any> {
         const user = await this.userService.findOne(loginUserDto.email);
         const accessToken = await this.getAccessToken(user.id);
         const refreshToken = await this.getRefreshToken(user.id);

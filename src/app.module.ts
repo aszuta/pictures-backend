@@ -8,6 +8,8 @@ import Config from './config';
 import { join } from 'path';
 import { CommentModule } from './comment/comment.module';
 import { VoteModule } from './vote/vote.module';
+import { RedisService } from './redis/redis.service';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -23,8 +25,9 @@ import { VoteModule } from './vote/vote.module';
     AuthModule,
     CommentModule,
     VoteModule,
+    RedisModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [RedisService],
 })
 export class AppModule {}

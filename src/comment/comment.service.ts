@@ -8,22 +8,22 @@ export class CommentService {
         @InjectKnex() private knex: Knex,
     ) {}
 
-    async createComment(addCommentDto: AddCommentDto, id: number) {
+    async createComment(addCommentDto: AddCommentDto, id: number): Promise<void> {
         const data = {
             postId: id,
             name: addCommentDto.name,
             content: addCommentDto.content,
-            date: new Date(),
+            createdAt: new Date(),
         };
         await this.knex.table('comment').insert(data);
     }
 
-    async getComments(id: number) {
+    async getComments(id: number): Promise<any> {
         const comments = await this.knex.table('comment').where('postId', id);
         return comments;
     }
 
-    async deleteComment(id: number) {
+    async deleteComment(id: number): Promise<void> {
         await this.knex.table('comment').del().where('id', id);
     }
 }

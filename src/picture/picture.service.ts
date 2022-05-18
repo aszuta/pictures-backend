@@ -1,14 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectKnex, Knex } from 'nestjs-knex';
 import { AddPictureDto } from 'dto/add-picture.dto';
+import { RedisService } from 'src/redis/redis.service';
 
 @Injectable()
 export class PictureService {
     constructor(
         @InjectKnex() private knex: Knex,
+        private redisService: RedisService,
     ) {}
 
-    async uploadFile(addPictureDto: AddPictureDto, picture: any){
+    async uploadFile(addPictureDto: AddPictureDto, picture: any): Promise<void> {
         const path = picture.path.replace(/\\/g, "/");
         const data = {
             title: addPictureDto.title,
@@ -16,28 +18,65 @@ export class PictureService {
             filename: picture.filename,
             filepath: path,
             mimetype: picture.mimetype,
-            size: picture.size,
         };
         await this.knex.table('picture').insert(data);
+        this.redisService.del('dashboard');
     }
 
-    async findOne(fileName: string) {
-        const picture = await this.knex.table('picture').where('filename', fileName).first();
-        return picture;
+    async findOne(id: number): Promise<any> {
+        return await this.knex
+            .select(
+                'id', 
+                'title', 
+                'createdBy',
+                this.knex.raw(`(SELECT name FROM picturesapp.user WHERE picturesapp.user.id = picturesapp.picture.createdBy) AS name`),
+                'createdAt', 
+                'filename', 
+                'filepath',
+                this.knex.raw(`(SELECT COUNT(voteType) FROM picturesapp.vote WHERE voteType="voteUp" AND picturesapp.vote.postId = picturesapp.picture.id) AS votesUp`),
+                this.knex.raw(`(SELECT COUNT(voteType) FROM picturesapp.vote WHERE voteType="voteDown" AND picturesapp.vote.postId = picturesapp.picture.id) AS votesDown`))
+            .from('picture').where('id', id).first();
     }
 
-    async findAll() {
-        const pictures = await this.knex.select().table('picture');
-        console.log(pictures);
-        return pictures;
+    async getPicturesWithVotes(): Promise<any> {
+        const pictures = await this.knex
+            .select(
+                'id', 
+                'title', 
+                'createdBy',
+                this.knex.raw(`(SELECT name FROM picturesapp.user WHERE picturesapp.user.id = picturesapp.picture.createdBy) AS name`),
+                'createdAt', 
+                'filename', 
+                'filepath',
+                this.knex.raw(`(SELECT COUNT(voteType) FROM picturesapp.vote WHERE voteType="voteUp" AND picturesapp.vote.postId = picturesapp.picture.id) AS votesUp`),
+                this.knex.raw(`(SELECT COUNT(voteType) FROM picturesapp.vote WHERE voteType="voteDown" AND picturesapp.vote.postId = picturesapp.picture.id) AS votesDown`))
+            .from('picture');
+
+        await this.redisService.set('dashboard', JSON.stringify(pictures), 86400);
+        const cachedPictures = await this.redisService.get('dashboard');
+        return JSON.parse(cachedPictures);
     }
 
-    async findById(id: number) {
-        const pictures = await this.knex.select().table('picture').where('createdBy', id).first();
-        return pictures;
+    async getPicturesById(id: number): Promise<any> {
+        const pictures = await this.knex
+            .select(
+                'id',
+                'title',
+                'createdBy',
+                this.knex.raw(`(SELECT name FROM picturesapp.user WHERE picturesapp.user.id = picturesapp.picture.createdBy) AS name`),
+                'createdAt',
+                'filename',
+                'filepath',
+                this.knex.raw(`(SELECT COUNT(voteType) FROM picturesapp.vote WHERE voteType="voteUp" AND picturesapp.vote.postId = picturesapp.picture.id) AS votesUp`),
+                this.knex.raw(`(SELECT COUNT(voteType) FROM picturesapp.vote WHERE voteType="voteDown" AND picturesapp.vote.postId = picturesapp.picture.id) AS votesDown`))
+            .from('picture').where('createdBy', id);
+        
+            await this.redisService.set('profile', JSON.stringify(pictures), 86400);
+            const cachedPictures = await this.redisService.get('profile');
+            return JSON.parse(cachedPictures);
     }
 
-    async removeById(id: number) {
-        return await this.knex.table('picture').del().where('id', id);
+    async removeById(id: number): Promise<void> {
+        await this.knex.table('picture').where('id', id).del();
     }
 }

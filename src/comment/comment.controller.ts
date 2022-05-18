@@ -9,17 +9,18 @@ export class CommentController {
     ) {}
 
     @Post(':id')
-    createComment(@Param('id') id: number, @Body() addCommentDto: AddCommentDto){
+    createComment(@Param('id') id: number, @Body() addCommentDto: AddCommentDto): any {
         return this.commentService.createComment(addCommentDto, id);
     }
 
     @Get(':id')
-    getComments(@Param('id') id: number){
+    getComments(@Param('id') id: number): any {
+        console.log(this.commentService.getComments(id));
         return this.commentService.getComments(id);
     }
 
     @Delete(':id')
-    deleteComment(@Param('id') id: number){
+    deleteComment(@Param('id') id: number): any {
         return this.commentService.deleteComment(id);
     }
 }

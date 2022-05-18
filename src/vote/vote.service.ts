@@ -1,45 +1,36 @@
 import { Injectable } from '@nestjs/common';
 import { InjectKnex, Knex } from 'nestjs-knex';
 import { AddVoteDto } from 'dto/add-vote.dto';
+import { RedisService } from 'src/redis/redis.service';
 
 @Injectable()
 export class VoteService {
     constructor(
-        @InjectKnex() private knex: Knex
+        @InjectKnex() private knex: Knex,
+        private redisService: RedisService,
     ) {}
 
-    async addVote(id: number, addVoteDto: AddVoteDto){
+    async addVote(id: number, addVoteDto: AddVoteDto): Promise<void> {
         const data = {
             userId: addVoteDto.userId,
             postId: id,
             voteType: addVoteDto.voteType,
         };
-        console.log(data);
         await this.knex.table('vote').insert(data);
+        this.redisService.del('dashboard');
     }
 
-    async getVote(id: number){
-        // const votes = await this.knex.select
-        // (['postId', 'voteType', this.knex.raw('COUNT(voteType) as count')])
-        // .table('vote').groupBy('voteType').groupByRaw('postId');
-        // return votes;
-        console.log(id);
+    async getVote(id: number): Promise<any> {
         const vote = await this.knex.select('userId', 'postId', 'voteType').table('vote').where('postId', id).first();
-        console.log(vote);
         return vote;
     }
 
-    async getUserVotes(postId: number, userId: number) {
-        console.log(userId);
-        console.log(postId);
+    async getUserVotes(postId: number, userId: number): Promise<any> {
         const vote = await this.knex.table('vote').where('postId', postId).andWhere('userId', userId).first();
-        console.log(vote);
         return vote;
     }
 
-    async deleteVote(id: number, addVoteDto: AddVoteDto){
-        console.log(id);
-        console.log(addVoteDto.userId);
+    async deleteVote(id: number, addVoteDto: AddVoteDto): Promise<void> {
         await this.knex.table('vote').del().where('userId', addVoteDto.userId).andWhere('postId', id);
     }
 }

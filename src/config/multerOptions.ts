@@ -35,12 +35,12 @@ export const multerOptions: MulterOptions = {
         ) {
             const uploadPath = process.env.UPLOAD_DIR;
             console.dir(uploadPath);
+            console.log(file);
 
             if(!existsSync(uploadPath)) {
                 mkdirSync(uploadPath);
             }
-
-            done(null, uploadPath);
+                done(null, uploadPath);
         },
         filename(
             req: Request,

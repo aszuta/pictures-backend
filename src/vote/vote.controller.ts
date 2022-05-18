@@ -9,24 +9,24 @@ export class VoteController {
     ) {}
 
     @Post(':id')
-    addVote(@Param('id') id: number, @Body() addVoteDto: AddVoteDto){
+    addVote(@Param('id') id: number, @Body() addVoteDto: AddVoteDto): any {
         console.log(id);
         console.log(addVoteDto);
         return this.voteService.addVote(id, addVoteDto);
     }
 
     @Get(':id')
-    getVote(@Param('id') postId: number){
+    getVote(@Param('id') postId: number): any {
         return this.voteService.getVote(postId);
     }
 
     @Get(':postId/:userId')
-    getUserVotes(@Param('postId') postId: number, @Param('userId') userId: number){
+    getUserVotes(@Param('postId') postId: number, @Param('userId') userId: number): any {
         return this.voteService.getUserVotes(postId, userId);
     }
 
     @Delete(':id')
-    deleteVote(@Param('id') id: number, @Body() addVoteDto: AddVoteDto){
+    deleteVote(@Param('id') id: number, @Body() addVoteDto: AddVoteDto): any {
         return this.voteService.deleteVote(id, addVoteDto);
     }
 }
