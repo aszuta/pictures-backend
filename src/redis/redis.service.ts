@@ -7,9 +7,10 @@ export class RedisService {
     private redisClient;
 
     constructor() {
-        const { host, port, db } = redisConfig;
+        // const { host, port, db } = redisConfig;
+        // || `redis://${host}:${port}/${db}`
         this.redisClient = createClient({
-            url: process.env.REDIS_URL || `redis://${host}:${port}/${db}`,
+            url: process.env.REDIS_URL,
         })
     }
 
