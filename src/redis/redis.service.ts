@@ -12,11 +12,6 @@ export class RedisService {
         this.redisClient = createClient({
             url: process.env.REDIS_URL,
         });
-        this.redisClient.disconnect().then(function() {
-            setTimeout(function() {
-              this.redisClient.connect();
-            }, 0);
-          });
     }
 
     async get(key): Promise<any> {
