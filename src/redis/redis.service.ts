@@ -12,7 +12,6 @@ export class RedisService {
         this.redisClient = createClient({
             url: process.env.REDIS_URL,
         });
-        this.onModuleInit();
     }
 
     async get(key): Promise<any> {
