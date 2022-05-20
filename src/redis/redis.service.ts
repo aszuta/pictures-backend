@@ -12,6 +12,10 @@ export class RedisService {
         this.redisClient = createClient({
             url: process.env.REDIS_URL,
         });
+        this.redisClient.on('error', (err) => {
+            console.log(err.message);
+            this.onModuleInit();
+        });
     }
 
     async get(key): Promise<any> {
