@@ -32,7 +32,7 @@ export class RedisService {
 
     async onModuleInit(): Promise<void> {
         await this.redisClient.connect().then(function() {
-            return this.redisClient.disconnect();
+            this.redisClient.disconnect();
           })
           .then(function() {
             setTimeout(function() {
