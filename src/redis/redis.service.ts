@@ -11,7 +11,8 @@ export class RedisService {
         // || `redis://${host}:${port}/${db}`
         this.redisClient = createClient({
             url: process.env.REDIS_URL,
-        })
+        });
+        this.onModuleInit();
     }
 
     async get(key): Promise<any> {
