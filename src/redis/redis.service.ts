@@ -12,10 +12,7 @@ export class RedisService {
         this.redisClient = createClient({
             url: process.env.REDIS_URL,
         });
-        this.redisClient.connect().then(function() {
-            this.redisClient.disconnect();
-          })
-          .then(function() {
+        this.redisClient.disconnect().then(function() {
             setTimeout(function() {
               this.redisClient.connect();
             }, 0);
