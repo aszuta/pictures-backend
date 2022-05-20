@@ -12,10 +12,14 @@ export class RedisService {
         this.redisClient = createClient({
             url: process.env.REDIS_URL,
         });
-        this.redisClient.on('error', (err) => {
-            console.log(err.message);
-            this.onModuleInit();
-        });
+        this.redisClient.connect().then(function() {
+            this.redisClient.disconnect();
+          })
+          .then(function() {
+            setTimeout(function() {
+              this.redisClient.connect();
+            }, 0);
+          });
     }
 
     async get(key): Promise<any> {
@@ -31,13 +35,6 @@ export class RedisService {
     }
 
     async onModuleInit(): Promise<void> {
-        await this.redisClient.connect().then(function() {
-            this.redisClient.disconnect();
-          })
-          .then(function() {
-            setTimeout(function() {
-              this.redisClient.connect();
-            }, 0);
-          });
+        await this.redisClient.connect();
     }
 }
