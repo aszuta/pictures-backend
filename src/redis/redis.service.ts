@@ -12,9 +12,9 @@ export class RedisService {
         this.redisClient = createClient({
             url: process.env.REDIS_URL,
         });
-        this.redisClient.on('error'), (err) => {
+        this.redisClient.on('error', (err) => {
             console.error('Redis error: ', err);
-        }
+        });
     }
 
     async get(key): Promise<any> {
