@@ -20,12 +20,12 @@ import { RedisModule } from './redis/redis.module';
       rootPath: join(__dirname, '..', '../public'),
       serveRoot: '/public/'
     }),
+    RedisModule,
     PictureModule,
     UserModule,
     AuthModule,
     CommentModule,
     VoteModule,
-    RedisModule,
   ],
   controllers: [],
   providers: [RedisService],
