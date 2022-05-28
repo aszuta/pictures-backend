@@ -1,32 +1,30 @@
-import { Body, Controller, Post, Param, Delete, Get } from '@nestjs/common';
+import { Body, Controller, Post, Param, Delete, Get, ParseIntPipe } from '@nestjs/common';
 import { VoteService } from 'src/vote/vote.service';
-import { AddVoteDto } from 'dto/add-vote.dto';
+import { VoteDto } from 'src/vote/dto/vote.dto';
 
-@Controller('api/vote')
+@Controller('vote')
 export class VoteController {
     constructor(
         private readonly voteService: VoteService
     ) {}
 
     @Post(':id')
-    addVote(@Param('id') id: number, @Body() addVoteDto: AddVoteDto): any {
-        console.log(id);
-        console.log(addVoteDto);
+    addVote(@Param('id', ParseIntPipe) id, @Body() addVoteDto: VoteDto): any {
         return this.voteService.addVote(id, addVoteDto);
     }
 
     @Get(':id')
-    getVote(@Param('id') postId: number): any {
-        return this.voteService.getVote(postId);
+    getVote(@Param('id', ParseIntPipe) id): any {
+        return this.voteService.getVote(id);
     }
 
     @Get(':postId/:userId')
-    getUserVotes(@Param('postId') postId: number, @Param('userId') userId: number): any {
+    getUserVotes(@Param('postId', ParseIntPipe) postId, @Param('userId', ParseIntPipe) userId): any {
         return this.voteService.getUserVotes(postId, userId);
     }
 
     @Delete(':id')
-    deleteVote(@Param('id') id: number, @Body() addVoteDto: AddVoteDto): any {
+    deleteVote(@Param('id', ParseIntPipe) id, @Body() addVoteDto: VoteDto): any {
         return this.voteService.deleteVote(id, addVoteDto);
     }
 }

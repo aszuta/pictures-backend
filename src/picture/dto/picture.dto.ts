@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString, IsNumber } from "class-validator";
 
-export class AddPictureDto {
+export class PictureDto {
     @IsNotEmpty()
     @IsString()
     title: string;

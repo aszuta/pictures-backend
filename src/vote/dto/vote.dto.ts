@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString, IsNumber } from "class-validator";
 
-export class AddVoteDto {
+export class VoteDto {
     @IsNotEmpty()
     @IsString()
     voteType: string;

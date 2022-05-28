@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { LoginUserDto } from 'dto/login-user.dto';
+import { UserLoginDto } from 'src/user/dto/user.dto';
 import { uid } from 'rand-token';
 
 @Injectable()
@@ -12,13 +12,11 @@ export class AuthService {
         private jwtService: JwtService
         ){}
     
-    public async getAccessToken(id: number): Promise<any> {
-        const payload = { sub: id };
-        const token = this.jwtService.sign(payload);
-        return token;
+    async getAccessToken(id: number): Promise<any> {
+        return this.jwtService.sign({ sub: id });
     }
     
-    public async getRefreshToken(id: number): Promise<string> {
+    async getRefreshToken(id: number): Promise<string> {
         const refreshToken = uid(16);
         await this.userService.setCurrentRefreshToken(refreshToken, id);
         return refreshToken;
@@ -27,7 +25,6 @@ export class AuthService {
     async validateUser(email: string, password: string): Promise<any> {
         const user = await this.userService.findOne(email);
         if(user && bcrypt.compare(user.password, password)){
-            console.log('tak');
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { password, ...result } = user;
             return result;
@@ -35,7 +32,7 @@ export class AuthService {
         return null;
     }
 
-    async login(loginUserDto: LoginUserDto): Promise<any> {
+    async login(loginUserDto: UserLoginDto): Promise<any> {
         const user = await this.userService.findOne(loginUserDto.email);
         const accessToken = await this.getAccessToken(user.id);
         const refreshToken = await this.getRefreshToken(user.id);

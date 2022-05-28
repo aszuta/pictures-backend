@@ -7,26 +7,37 @@ export class RedisService {
     private redisClient;
 
     constructor() {
-        // const { host, port, db } = redisConfig;
-        // || `redis://${host}:${port}/${db}`
+        const { host, port, db } = redisConfig;
         this.redisClient = createClient({
-            url: process.env.REDIS_URL,
+            url: process.env.REDIS_URL || `redis://${host}:${port}/${db}`,
         });
         this.redisClient.on('error', (err) => {
             console.error('Redis error: ', err);
         });
     }
 
-    async get(key): Promise<any> {
-        return this.redisClient.get(key);
+    async get(key: string): Promise<any> {
+        return this.redisClient.get(key, (error) => {
+            console.error(error);
+        });
     }
 
-    async set(key, value, expires): Promise<void> {
-        await this.redisClient.set(key, value, 'EX', expires);
+    async set(key: string, value: any, expires: number): Promise<void> {
+        const expireArgs = expires ? ['EX', expires] : [];
+        this.redisClient.set(
+            key,
+            value,
+            ...expireArgs,
+            (error) => {
+                console.error(error);
+            },
+        );
     }
 
-    async del(key): Promise<void> {
-        await this.redisClient.del(key);
+    async del(key: string): Promise<void> {
+        await this.redisClient.del(key, (error) => {
+            console.error(error);
+        });
     }
 
     async onModuleInit(): Promise<void> {

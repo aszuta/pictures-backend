@@ -14,7 +14,7 @@ async function bootstrap() {
   });
   app.enableCors();
   app.use(cookieParser());
-  // app.setGlobalPrefix('/api');
+  app.setGlobalPrefix(Config.apiPrefix);
   await app.listen(Config.port, Config.host, () => {
     console.log(`App listening on port ${Config.port}`);
   });

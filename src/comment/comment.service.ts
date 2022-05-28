@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectKnex, Knex } from 'nestjs-knex';
-import { AddCommentDto } from 'dto/add-comment.dto';
+import { CommentDto } from 'src/comment/dto/comment.dto';
+import { Comment } from './comment.interface';
 
 @Injectable()
 export class CommentService {
@@ -8,19 +9,18 @@ export class CommentService {
         @InjectKnex() private knex: Knex,
     ) {}
 
-    async createComment(addCommentDto: AddCommentDto, id: number): Promise<void> {
+    async createComment(addCommentDto: CommentDto, id: number): Promise<void> {
         const data = {
             postId: id,
             name: addCommentDto.name,
             content: addCommentDto.content,
             createdAt: new Date(),
         };
-        await this.knex.table('comment').insert(data);
+        await this.knex.table<Comment>('comment').insert(data);
     }
 
-    async getComments(id: number): Promise<any> {
-        const comments = await this.knex.table('comment').where('postId', id);
-        return comments;
+    async getComments(id: number): Promise<Record<string, any>> {
+        return this.knex.table<Comment>('comment').where('postId', id);
     }
 
     async deleteComment(id: number): Promise<void> {
