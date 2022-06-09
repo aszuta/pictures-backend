@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectKnex, Knex } from 'nestjs-knex';
 import { UserDto } from 'src/user/dto/user.dto';
 import * as bcrypt from 'bcrypt';

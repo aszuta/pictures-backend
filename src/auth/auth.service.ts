@@ -3,7 +3,7 @@ import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { UserLoginDto } from 'src/user/dto/user.dto';
-import { uid } from 'rand-token';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AuthService {
@@ -12,12 +12,12 @@ export class AuthService {
         private jwtService: JwtService
         ){}
     
-    async getAccessToken(id: number): Promise<any> {
+    async getAccessToken(id: number): Promise<string> {
         return this.jwtService.sign({ sub: id });
     }
     
     async getRefreshToken(id: number): Promise<string> {
-        const refreshToken = uid(16);
+        const refreshToken = uuidv4();
         await this.userService.setCurrentRefreshToken(refreshToken, id);
         return refreshToken;
     }
@@ -25,14 +25,13 @@ export class AuthService {
     async validateUser(email: string, password: string): Promise<any> {
         const user = await this.userService.findOne(email);
         if(user && bcrypt.compare(user.password, password)){
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { password, ...result } = user;
-            return result;
+            delete user.password;
+            return user;
         }
         return null;
     }
 
-    async login(loginUserDto: UserLoginDto): Promise<any> {
+    async login(loginUserDto: UserLoginDto): Promise<Record<string, any>> {
         const user = await this.userService.findOne(loginUserDto.email);
         const accessToken = await this.getAccessToken(user.id);
         const refreshToken = await this.getRefreshToken(user.id);

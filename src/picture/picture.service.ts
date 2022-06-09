@@ -24,58 +24,6 @@ export class PictureService {
         this.redisService.del('dashboard');
     }
 
-    async findOne(id: number): Promise<Picture> {
-        return this.knex<Picture>('picture')
-            .select(
-                'id',
-                'title',
-                'createdBy',
-                this.knex.raw(`(SELECT name FROM user WHERE user.id = picture.createdBy) AS name`),
-                'createdAt',
-                'filename',
-                'filepath',
-                this.knex.raw(`(SELECT COUNT(voteType) FROM vote WHERE voteType="voteUp" AND vote.postId = picture.id) AS votesUp`),
-                this.knex.raw(`(SELECT COUNT(voteType) FROM vote WHERE voteType="voteDown" AND vote.postId = picture.id) AS votesDown`))
-            .where('id', id).first();
-    }
-
-    async getPicturesWithVotes(): Promise<any> {
-        const pictures = await this.knex('picture')
-            .select(
-                'id',
-                'title',
-                'createdBy',
-                this.knex.raw(`(SELECT name FROM user WHERE user.id = picture.createdBy) AS name`),
-                'createdAt',
-                'filename',
-                'filepath',
-                this.knex.raw(`(SELECT COUNT(voteType) FROM vote WHERE voteType="voteUp" AND vote.postId = picture.id) AS votesUp`),
-                this.knex.raw(`(SELECT COUNT(voteType) FROM vote WHERE voteType="voteDown" AND vote.postId = picture.id) AS votesDown`));
-
-        await this.redisService.set('dashboard', JSON.stringify(pictures), 86400);
-        const cachedPictures = await this.redisService.get('dashboard');
-        return JSON.parse(cachedPictures);
-    }
-
-    async getPicturesById(id: number): Promise<Picture> {
-        const pictures = await this.knex<Picture>('picture')
-            .select(
-                'id',
-                'title',
-                'createdBy',
-                this.knex.raw(`(SELECT name FROM user WHERE user.id = picture.createdBy) AS name`),
-                'createdAt',
-                'filename',
-                'filepath',
-                this.knex.raw(`(SELECT COUNT(voteType) FROM vote WHERE voteType="voteUp" AND vote.postId = picture.id) AS votesUp`),
-                this.knex.raw(`(SELECT COUNT(voteType) FROM vote WHERE voteType="voteDown" AND vote.postId = picture.id) AS votesDown`))
-            .where('createdBy', id);
-        
-            await this.redisService.set('profile', JSON.stringify(pictures), 86400);
-            const cachedPictures = await this.redisService.get('profile');
-            return JSON.parse(cachedPictures);
-    }
-
     async removeById(id: number): Promise<void> {
         await this.knex<Picture>('picture').where('id', id).del();
     }

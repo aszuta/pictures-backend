@@ -17,7 +17,7 @@ export class VoteService {
             postId: id,
             voteType: addVoteDto.voteType,
         };
-        await this.knex<Vote>('vote').insert(data);
+        await this.knex<Vote>('vote').insert(data).onConflict(['userId', 'postId']).merge();
         await this.redisService.del('dashboard');
     }
 

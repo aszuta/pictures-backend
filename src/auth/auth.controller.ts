@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards, Req, Res, NotFoundException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserLoginDto } from 'src/user/dto/user.dto';
 import { LocalAuthGuard } from 'src/auth/local-auth.guard';
@@ -27,8 +27,12 @@ export class AuthController {
 
     @UseGuards(JwtAuthGuard)
     @Get('profile')
-    async getUser(@Req() req): Promise<any>{
-        return await this.userService.findById(req.user.id);
+    async getUser(@Req() req): Promise<Record<string, any>> {
+        const user = await this.userService.findById(req.user.id);
+        if(!user) {
+            throw new NotFoundException();
+        }
+        return user;
     }
 
     @Get('refresh')
