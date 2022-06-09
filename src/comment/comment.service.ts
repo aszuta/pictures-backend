@@ -12,14 +12,12 @@ export class CommentService {
     async createComment(addCommentDto: CommentDto, id: number): Promise<void> {
         const data = {
             postId: id,
-            name: addCommentDto.name,
-            content: addCommentDto.content,
-            createdAt: new Date(),
+            ...addCommentDto,
         };
         await this.knex.table<Comment>('comment').insert(data);
     }
 
-    async getComments(id: number): Promise<Record<string, any>> {
+    async getComments(id: number): Promise<Comment[]> {
         return this.knex.table<Comment>('comment').where('postId', id);
     }
 

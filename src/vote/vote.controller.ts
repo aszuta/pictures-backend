@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Param, Delete, Get, ParseIntPipe } from '@nestjs/common';
+import { Body, Controller, Post, Param, Delete, Get, ParseIntPipe, Query } from '@nestjs/common';
 import { VoteService } from 'src/vote/vote.service';
 import { VoteDto } from 'src/vote/dto/vote.dto';
 
@@ -18,8 +18,8 @@ export class VoteController {
         return this.voteService.getVote(id);
     }
 
-    @Get(':postId/:userId')
-    getUserVotes(@Param('postId', ParseIntPipe) postId, @Param('userId', ParseIntPipe) userId): any {
+    @Get()
+    getUserVotes(@Query('postId', ParseIntPipe) postId: number, @Query('userId', ParseIntPipe) userId: number): any {
         return this.voteService.getUserVotes(postId, userId);
     }
 
