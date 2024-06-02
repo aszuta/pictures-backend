@@ -27,4 +27,8 @@ export class PictureService {
     async removeById(id: number): Promise<void> {
         await this.knex<Picture>('picture').where('id', id).del();
     }
+
+    async onModuleInit(): Promise<void> {
+        await this.redisService.del('dashboard');
+    }
 }

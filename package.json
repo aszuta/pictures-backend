@@ -32,7 +32,7 @@
     "cookie-parser": "^1.4.6",
     "dotenv": "^10.0.0",
     "knex": "^3.1.0",
-    "mysql2": "^2.3.3",
+    "mysql2": "^3.9.8",
     "nestjs-knex": "^2.0.0",
     "nestjs-redis": "^1.2.6",
     "passport": "^0.7.0",
