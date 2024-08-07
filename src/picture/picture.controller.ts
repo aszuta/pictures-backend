@@ -24,6 +24,12 @@ export class PictureController {
     async getFile(@Param('id', ParseIntPipe) id): Promise<Record<string, any>> {
         const picture = await this.knex('picture').where('id', id).first();
 
+        const tags = await this.knex('tags')
+            .join('picture_tags', 'tags.id', 'picture_tags.tagId')
+            .join('picture', 'picture_tags.postId', 'picture.id')
+            .where('picture_tags.postId', id)
+            .select('tags.*');
+
         const votes = await this.knex('vote')
             .select([
                 'postId',
@@ -41,6 +47,7 @@ export class PictureController {
 
         const total = {
             ...picture,
+            tags,
             votes: votesMap[picture.id],
         };
 
@@ -55,6 +62,11 @@ export class PictureController {
         } else {
             const pictures = await this.knex('picture');
 
+            const tags = await this.knex('tags')
+            .join('picture_tags', 'tags.id', 'picture_tags.tagId')
+            .join('picture', 'picture_tags.postId', 'picture.id')
+            .select('*');
+
             const votes = await this.knex('vote')
                 .select([
                     'postId',
@@ -62,6 +74,12 @@ export class PictureController {
                     this.knex.raw('COUNT(voteType) as count'),
                 ])
                 .groupBy(['postId', 'voteType']);
+
+            const tagsMap = tags.reduce((obj, tag) => {
+                if (!obj[tag.postId]) obj[tag.postId] = [];
+                obj[tag.postId].push(tag.tagId, tag.name);
+                return obj;
+            }, {});
 
             const votesMap = votes.reduce((obj, vote) => {
                 if (!obj[vote.postId]) obj[vote.postId] = {};
@@ -72,6 +90,7 @@ export class PictureController {
             const total = pictures.map((picture) => {
                 return {
                     ...picture,
+                    tags: tagsMap[picture.id],
                     votes: votesMap[picture.id],
                 };
             });

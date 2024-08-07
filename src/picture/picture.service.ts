@@ -20,7 +20,28 @@ export class PictureService {
             filepath: path,
             mimetype: picture.mimetype,
         };
-        await this.knex.table<Picture>('picture').insert(data);
+        const tags = addPictureDto.tags;
+        const result = await this.knex.table<Picture>('picture').insert(data);
+
+        const tagIds = [];
+
+        for (const tag of tags) {
+            let tagId;
+            const existingTag = await this.knex('tags').where('name', tag).first();
+
+            if (existingTag) {
+                tagId = existingTag.id;
+            } else {
+                const insertedTag = await this.knex('tags').insert({name: tag});
+                tagId = insertedTag[0];
+            }
+
+            tagIds.push(tagId);
+        }
+
+        const inserts = tagIds.map(tagId => ({ postId: result[0], tagId: tagId }));
+        await this.knex('picture_tags').insert(inserts);
+
         this.redisService.del('dashboard');
     }
 
