@@ -10,6 +10,7 @@ import { CommentModule } from './comment/comment.module';
 import { VoteModule } from './vote/vote.module';
 import { RedisService } from './redis/redis.service';
 import { RedisModule } from './redis/redis.module';
+import { SaveModule } from './save/save.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { RedisModule } from './redis/redis.module';
     AuthModule,
     CommentModule,
     VoteModule,
+    SaveModule,
   ],
   controllers: [],
   providers: [RedisService],
