@@ -1,10 +1,11 @@
-import { Controller, Post, UploadedFile, UseInterceptors, Req, Get, Param, Delete, Body, ParseIntPipe } from '@nestjs/common';
+import { Controller, Post, UseGuards, UploadedFile, UseInterceptors, Req, Get, Param, Delete, Body, ParseIntPipe } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PictureDto } from 'src/picture/dto/picture.dto';
 import { multerOptions } from 'src/config/multerOptions';
 import { PictureService } from './picture.service';
 import { InjectKnex, Knex } from 'nestjs-knex';
 import { RedisService } from 'src/redis/redis.service';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('picture')
 export class PictureController {
@@ -14,6 +15,7 @@ export class PictureController {
         private readonly pictureService: PictureService
     ) {}
 
+    @UseGuards(JwtAuthGuard)
     @Post()
     @UseInterceptors(FileInterceptor('picture', multerOptions))
     uploadFile(@UploadedFile() file, @Req() req, @Body() addPictureDto: PictureDto): Promise<void> {
@@ -22,36 +24,7 @@ export class PictureController {
 
     @Get(':id')
     async getFile(@Param('id', ParseIntPipe) id): Promise<Record<string, any>> {
-        const picture = await this.knex('picture').where('id', id).first();
-
-        const tags = await this.knex('tags')
-            .join('picture_tags', 'tags.id', 'picture_tags.tagId')
-            .join('picture', 'picture_tags.postId', 'picture.id')
-            .where('picture_tags.postId', id)
-            .select('tags.*');
-
-        const votes = await this.knex('vote')
-            .select([
-                'postId',
-                'voteType',
-                this.knex.raw('COUNT(voteType) as count'),
-            ])
-            .where('postId', id)
-            .groupBy(['postId', 'voteType']);
-
-        const votesMap = votes.reduce((obj, vote) => {
-            if (!obj[vote.postId]) obj[vote.postId] = {};
-            obj[vote.postId][vote.voteType] = vote.count;
-            return obj;
-        }, {});
-
-        const total = {
-            ...picture,
-            tags,
-            votes: votesMap[picture.id],
-        };
-
-        return total;
+        return await this.pictureService.getPicture(id);
     }
 
     @Get()
@@ -60,41 +33,7 @@ export class PictureController {
         if(cachedPictures) {
             return JSON.parse(cachedPictures);
         } else {
-            const pictures = await this.knex('picture');
-
-            const tags = await this.knex('tags')
-            .join('picture_tags', 'tags.id', 'picture_tags.tagId')
-            .join('picture', 'picture_tags.postId', 'picture.id')
-            .select('*');
-
-            const votes = await this.knex('vote')
-                .select([
-                    'postId',
-                    'voteType',
-                    this.knex.raw('COUNT(voteType) as count'),
-                ])
-                .groupBy(['postId', 'voteType']);
-
-            const tagsMap = tags.reduce((obj, tag) => {
-                if (!obj[tag.postId]) obj[tag.postId] = [];
-                obj[tag.postId].push(tag.tagId, tag.name);
-                return obj;
-            }, {});
-
-            const votesMap = votes.reduce((obj, vote) => {
-                if (!obj[vote.postId]) obj[vote.postId] = {};
-                obj[vote.postId][vote.voteType] = vote.count;
-                return obj;
-            }, {});
-
-            const total = pictures.map((picture) => {
-                return {
-                    ...picture,
-                    tags: tagsMap[picture.id],
-                    votes: votesMap[picture.id],
-                };
-            });
-
+            const total = await this.pictureService.getPictures();
             await this.redisService.set('dashboard', JSON.stringify(total), 86400);
             return total;
         }
@@ -106,34 +45,13 @@ export class PictureController {
         if(cachedPictures) {
             return JSON.parse(cachedPictures);
         } else {
-            const pictures = await this.knex('picture').where('createdBy', id);
-
-            const votes = await this.knex('vote')
-                .select([
-                    'postId',
-                    'voteType',
-                    this.knex.raw('COUNT(voteType) as count'),
-                ])
-                .groupBy(['postId', 'voteType']);
-
-            const votesMap = votes.reduce((obj, vote) => {
-                if (!obj[vote.postId]) obj[vote.postId] = {};
-                obj[vote.postId][vote.voteType] = vote.count;
-                return obj;
-            }, {});
-
-            const total = pictures.map((picture) => {
-                return {
-                    ...picture,
-                    votes: votesMap[picture.id],
-                };
-            });
-
+            const total = await this.pictureService.getPictureByUser(id);
             this.redisService.set(`profile/user:${id}`, JSON.stringify(total), 86400);
             return total;
         }
     }
 
+    @UseGuards(JwtAuthGuard)
     @Delete(':id')
     async deleteFile(@Param('id', ParseIntPipe) id): Promise<any> {
         return await this.pictureService.removeById(id);
