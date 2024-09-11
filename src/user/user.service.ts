@@ -29,8 +29,8 @@ export class UserService {
         return this.userRepository.findOne(email);
     }
 
-    async findOneById(id: number): Promise<User> {
-        return this.userRepository.findOneById(id);
+    async findOneById(id: number): Promise<Record<string, any>> {
+        return this.userRepository.findById(id);
     }
 
     async findById(id: number): Promise<Record<string, any>> {

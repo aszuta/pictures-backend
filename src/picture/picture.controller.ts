@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, UploadedFile, UseInterceptors, Req, Get, Param, Delete, Body, ParseIntPipe } from '@nestjs/common';
+import { Controller, Post, UseGuards, UploadedFile, UseInterceptors, Req, Get, Param, Delete, Body, ParseIntPipe, Query } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PictureDto } from 'src/picture/dto/picture.dto';
 import { multerOptions } from 'src/config/multerOptions';
@@ -6,6 +6,7 @@ import { PictureService } from './picture.service';
 import { InjectKnex, Knex } from 'nestjs-knex';
 import { RedisService } from 'src/redis/redis.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { PictureGuard } from './picture.guard';
 
 @Controller('picture')
 export class PictureController {
@@ -22,9 +23,10 @@ export class PictureController {
         return this.pictureService.uploadFile(addPictureDto, req.file);
     }
 
+    @UseGuards(PictureGuard)
     @Get(':id')
-    async getFile(@Param('id', ParseIntPipe) id): Promise<Record<string, any>> {
-        return await this.pictureService.getPicture(id);
+    async getFile(@Req() req, @Param('id', ParseIntPipe) id): Promise<Record<string, any>> {
+        return await this.pictureService.getPicture(id, req.user);
     }
 
     @Get()
@@ -39,6 +41,11 @@ export class PictureController {
         }
     }
 
+    @Get('saved/:id')
+    async getSavedPictures(@Param('id', ParseIntPipe) id: number): Promise<Record<string, any>> {
+        return await this.pictureService.getSavedPictures(id);
+    }
+
     @Get('file/:id')
     async getPictures(@Param('id', ParseIntPipe) id): Promise<Record<string, any>> {
         const cachedPictures = await this.redisService.get(`profile/user:${id}`);
@@ -49,6 +56,11 @@ export class PictureController {
             this.redisService.set(`profile/user:${id}`, JSON.stringify(total), 86400);
             return total;
         }
+    }
+
+    @Get('tag/:tagName')
+    async getPicturesByTag(@Param('tagName') tagName: string): Promise<Record<string, any>> {
+        return await this.pictureService.getPicturesByTag(tagName);
     }
 
     @UseGuards(JwtAuthGuard)

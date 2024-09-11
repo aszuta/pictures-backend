@@ -16,8 +16,9 @@ export class VoteRepository {
         return await this.knex<Vote>('vote').select('userId', 'postId', 'voteType').where('postId', id).first();
     }
 
-    async getUserVotes(postId: number, userId: number): Promise<Vote> {
-        return await this.knex<Vote>('vote').where('postId', postId).andWhere('userId', userId).first();
+    async getUserVotes(postId: number, userId: number): Promise<any> {
+        const d = await this.knex<Vote>('vote').where('postId', postId).andWhere('userId', userId).first();
+        return !!d;
     }
 
     async deleteVote(postId: number, userId: number): Promise<void> {

@@ -3,13 +3,21 @@ import { InjectKnex, Knex } from 'nestjs-knex';
 import { PictureDto } from 'src/picture/dto/picture.dto';
 import { RedisService } from 'src/redis/redis.service';
 import { PictureRepository } from './picture.repository';
+import { CommentRepository } from 'src/comment/comment.repository';
+import { SaveRepository } from 'src/save/save.repository';
+import { VoteRepository } from 'src/vote/vote.repository';
+import { UserRepository } from 'src/user/user.repository';
 
 @Injectable()
 export class PictureService {
     constructor(
         @InjectKnex() private knex: Knex,
         private redisService: RedisService,
-        private readonly pictureRepository: PictureRepository
+        private readonly pictureRepository: PictureRepository,
+        private readonly commentRepository: CommentRepository,
+        private readonly saveRepository: SaveRepository,
+        private readonly voteRepository: VoteRepository,
+        private readonly userRepository: UserRepository
     ) {}
 
     async uploadFile(addPictureDto: PictureDto, picture: any): Promise<void> {
@@ -44,23 +52,42 @@ export class PictureService {
         await this.pictureRepository.addTags(inserts);
 
         this.redisService.del('dashboard');
+        this.redisService.del(`profile/user:${data.createdBy}`);
     }
 
-    async getPicture(id: number): Promise<any> {
-        const picture = await this.pictureRepository.getPictureById(id);
-        const tags = await this.pictureRepository.findTagsByPostId(id);
-        const votes = await this.pictureRepository.findVotesByPostId(id);
+    async getPicture(postId: number, userId: number): Promise<any> {
+        const picture = await this.pictureRepository.getPictureById(postId);
+        const tags = await this.pictureRepository.findTagsByPostId(postId);
+        const votes = await this.pictureRepository.findVotesByPostId(postId);
+        const comments = await this.commentRepository.getComments(postId);
+
+        let isSaved: boolean;
+        let isLiked: boolean;
+
+        if(userId) {
+            isSaved = await this.saveRepository.getUserVotes(userId, postId);
+            isLiked = await this.voteRepository.getUserVotes(postId, userId);
+        }
+
+        const tagNames: string[] = tags.map(tag => tag.name);
+
+        const related = await this.pictureRepository.findPostsByTags(tagNames);
 
         const votesMap = votes.reduce((obj, vote) => {
             if (!obj[vote.postId]) obj[vote.postId] = {};
             obj[vote.postId][vote.voteType] = vote.count;
             return obj;
         }, {});
+        console.log(picture);
 
         const total = {
             ...picture,
             tags,
+            comments,
             votes: votesMap[picture.id],
+            related,
+            isSaved,
+            isLiked
         };
 
         return total;
@@ -104,6 +131,16 @@ export class PictureService {
         });
 
         return total;
+    }
+
+    async getSavedPictures(id: number): Promise<any> {
+        return await this.pictureRepository.findSaved(id);
+    }
+
+    async getPicturesByTag(tag: string): Promise<any> {
+        const r = await this.pictureRepository.findPostsByTag(tag);
+        console.log(r);
+        return r;
     }
 
     async removeById(id: number): Promise<void> {

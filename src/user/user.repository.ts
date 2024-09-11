@@ -16,8 +16,8 @@ export class UserRepository {
         return this.knex<User>('user').select().where('email', email).first();
     }
 
-    findOneById(id: number): Promise<User> {
-        return this.knex<User>('user').select().where('id', id).first();
+    findOneById(id: number): Promise<Record<string, any>> {
+        return this.knex('user').select('name').where('id', id);
     }
 
     findById(id: number): Promise<Record<string, any>> {
